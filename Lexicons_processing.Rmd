@@ -1,0 +1,342 @@
+---
+title: "Lexicon_processing"
+author: "SHM"
+date: "14/10/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+# Hausa Sentiment Lexicon Generation
+
+The aim of the project is to create Hausa sentiment lexicon (HausaLex). One of the possible approach that we can explore as a start is to translate existing sentiment lexicon from English.
+
+
+In order to carryout this data driven project, we will follow `CRISP` methodoloy:
+
++ Business Understanding
++ Data Understanding
++ Data Preparation
++ Modeling
++ Evaluation
++ Deployment
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Translated Bin Lui Lexicon Processing and exploration
+
+In this section, we translated Bin Liu opinion lexicon. The lexicon contains, 6,786 words that are classified with sentiment orientation of either positive or negative. More detail about Bin Lui lexicon [here](https://www.cs.uic.edu/~liub/FBS/sentiment-analysis.html#lexicon)
+
+
+
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+```
+
+Reading the translated lexicon from English to Hausa: 
+
+```{r message=FALSE, warning=FALSE}
+Bin_Pos <- as_tibble(read_csv(file = "bin_positive_tranlated.csv")) 
+Bin_Pos
+```
+
+#TODO put how to explore data here
+
+From the above, we have a total of `2,005` positive words from the lexicon.
+Re-arranging :
+
+```{r}
+
+Bin_Pos <-  Bin_Pos %>%  
+            relocate(text, .after = X1) %>% 
+            rename(Seria_num = "X1")
+
+Bin_Pos
+```
+
+After some few observations, I found out some lexicons are not translated to Hausa from English. Aagin, some words appeared to have repeated translation with `m` . Lets explore the non-translated and those with repated `m` as their translation:
+
+```{r}
+Bin_Pos <- Bin_Pos %>% 
+        mutate(non_translated =  if_else(translatedText == text, Bin_Pos$text, " ")) %>% 
+        mutate(repeated_m = if_else(translatedText == "m", "m", " "))
+Bin_Pos
+```
+
+## How many words are not translated 
+
+```{r}
+sum(Bin_Pos$non_translated != " ")
+```
+
+## What are the words that are not translate?
+
+```{r}
+
+non_translated_words <- Bin_Pos %>% 
+                  select(non_translated)  %>% 
+                  filter( non_translated != " " )
+          
+non_translated_words
+```
+
+
+## How many words are translated as "m"
+
+```{r}
+sum(Bin_Pos$repeated_m != " ")
+```
+
+## What are the words translated as "m"
+
+```{r}
+translated_as_m <- Bin_Pos %>% 
+                  select(repeated_m, translatedText, text) %>% 
+                  filter(repeated_m == "m")
+          
+translated_as_m
+```
+
+##  This section explore Bin Lui negative lexicon and process Bin Lui
+
+
+Reading the translated Bin Lui negative lexicon
+
+```{r}
+Bin_neg <- as_tibble(read_csv(file = "bin_negative_tranlated.csv"))
+
+```
+
+
+```{r}
+Bin_neg
+```
+
+
+
+#TODO put how to explore data here
+
+From the above, we have a total of `2,005` positive words from the lexicon.
+Re-arranging :
+
+```{r}
+
+Bin_neg <-  Bin_neg %>%  
+            relocate(text, .after = X1) %>% 
+            rename(Seria_num = "X1")
+
+Bin_neg
+```
+
+
+```{r}
+Bin_neg <- Bin_neg %>% 
+        mutate(non_translated =  if_else(translatedText == text, Bin_neg$text, " ")) %>% 
+        mutate(repeated_m = if_else(translatedText == "m", "m", " "))
+Bin_neg
+```
+
+
+## How many negative words are not translated 
+
+```{r}
+sum(Bin_neg$non_translated != " ")
+```
+
+## What are the words that are not translate?
+
+```{r}
+
+neg_non_translated <- Bin_neg %>% 
+                  select(non_translated)  %>% 
+                  filter(non_translated != " " )
+          
+neg_non_translated
+```
+
+
+## How many negative words are translated as "m"
+
+```{r}
+sum(Bin_neg$repeated_m != " ")
+```
+
+## What are the words translated as "m"
+
+```{r}
+neg_translated_as_m <- Bin_neg %>% 
+                  select(repeated_m, translatedText, text) %>% 
+                  filter(repeated_m == "m")
+          
+neg_translated_as_m
+```
+
+# Translated Affin Lexicon Processing and exploration
+
+This section explore the translated `Affin lexicon`.
+
+
+## Negative Affin Lexicon
+
+```{r}
+Affin_neg <- as_tibble(read_csv(file = "affin_negative_merged.csv"))
+
+```
+
+
+```{r}
+head(Affin_neg, 10)
+```
+
+The translated Affin lexicon also contains `m` and non-translated words as in the `Bin Liu` lexicon. We did exactly as in the previous section.
+
+
+```{r}
+Affin_neg <- Affin_neg %>% 
+        mutate(non_translated =  if_else(translatedText == word, Affin_neg$word, " ")) %>% 
+        mutate(repeated_m = if_else(translatedText == "m", "m", " "))
+Affin_neg
+```
+
+
+
+## How many negative words are not translated 
+
+```{r}
+sum(Affin_neg$non_translated != " ")
+```
+
+## What are the words that are not translate?
+
+```{r}
+Affin_neg_non_translated <- Affin_neg %>% 
+                  select(non_translated)  %>% 
+                  filter(non_translated != " " )
+          
+Affin_neg_non_translated
+```
+
+## Negative Affin Lexicon
+
+
+### How many Affin positive words are not translated 
+
+
+
+```{r}
+Affin_pos <- as_tibble(read_csv(file = "affin_positive_merged.csv"))
+
+```
+
+
+```{r}
+head(Affin_pos)
+```
+
+```{r}
+Affin_pos <- Affin_pos %>% 
+        mutate(non_translated =  if_else(translatedText == word, Affin_pos$word, " ")) %>% 
+        mutate(repeated_m = if_else(translatedText == "m", "m", " "))
+Affin_pos
+```
+
+
+
+
+
+## How many positive words that are not translated?
+
+
+```{r}
+sum(Affin_pos$non_translated != " ")
+```
+
+## What are the words that are not translate?
+
+```{r}
+pos_non_translated <- Affin_pos %>% 
+                  select(non_translated)  %>% 
+                  filter(non_translated != " " )
+          
+pos_non_translated
+```
+
+
+# Translated SentiWordNet Lexicon Processing and exploration
+
+This section explore the translated `Affin lexicon`.
+
+
+## Negative Affin Lexicon
+
+```{r}
+SentiWordNe <- as_tibble(read_csv(file = "sentiword_translation.csv"))
+
+```
+
+
+```{r}
+SentiWordNe
+```
+
+Sentiwordnet is 20,093 in total.
+
+
+```{r}
+SentiWordNet <- SentiWordNe %>% 
+        mutate(non_translated =  if_else(translatedText == words, SentiWordNe$words, " ")) %>% 
+        mutate(repeated_m = if_else(translatedText == "m", "m", " ")) 
+SentiWordNe
+```
+
+
+
+## How many positive words that are not translated?
+
+
+```{r}
+sum(SentiWordNet$non_translated != " ")
+```
+
+## What are the words that are not translate?
+
+```{r}
+SentNet_non_translated <- SentiWordNet %>% 
+                  select(non_translated)  %>% 
+                  filter(non_translated != " " )
+          
+SentNet_non_translated
+```
+
+
+#TODO
+* Share paper in Github
+* Do expirment with little data Twitter data
+* Ten years of NRC emotion lexiocn: https://medium.com/@nlpscholar/ten-years-of-the-nrc-word-emotion-association-lexicon-eaa47a8dd03e
+* expirement with R sentiment analysis tidyway
+
+kya mu canjasu all kya ..k
+
+## NRC dataset
+
+
+
+```{r}
+library(tidytext)
+```
+
+```{r}
+#nrc < get_sentiments("nrc")
+```
+

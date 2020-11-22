@@ -1,0 +1,234 @@
+---
+title: "Sentiment Lexicon Translation"
+author: "Shamsuddeen Hassan Muhammad"
+date: "14/08/2020"
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+## Translation of Lexicons
+
+In this document, we translated lexicons from English to three major Nigerian languages: Hausa, Yoruba and Igbo using [Google translation service R package](https://cran.r-project.org/web/packages/googleLanguageR/vignettes/setup.html) 
+
+
+Google Authentication and loading relevant libraries:
+
+```{r eval=FALSE,  echo=T}
+gl_auth("hausalex_credential.json")
+
+```
+
+```{r message=FALSE, warning=FALSE}
+library(googleLanguageR)
+library(tidytext)
+library(tidyverse)
+library(textdata)
+```
+
+### Bing Liu Sentiment Lexicon
+
+We start with translation of Bin Liu lexicon in this section.The lexicon contains, 6,786 words that are classified with sentiment orientation of either positive or negative. More detail about Bin Lui lexicon [here](https://www.cs.uic.edu/~liub/FBS/sentiment-analysis.html#lexicon)
+
+
+Reading and filtering in to negative and positive:
+
+```{r}
+bin <- get_sentiments("bing") 
+
+bin_pos <- bin %>% filter(sentiment == "positive")
+
+bin_neg <- bin %>% filter(sentiment == "negative")
+
+```
+
+```{r}
+head(bin_pos, n = 5)
+head(bin_neg, n = 5)
+```
+
+Removing the positive and negative words columns only:
+
+```{r}
+bin_pos_words <- bin_pos %>% 
+              pull("word")
+
+bin_neg_words <- bin_neg %>% 
+              pull("word") 
+```
+
+
+```{r}
+head(bin_pos_words, n = 5)
+head(bin_neg_words, n = 5)
+```
+
+Length of both negative and positive words:
+```{r}
+length(bin_pos_words)
+length(bin_neg_words)
+```
+
+Translating positive lexicon to Hausa 
+```{r eval=FALSE,  echo=T}
+bin_positive_tranlated <- gl_translate(bin_pos_words, format = 'text', source = 'en', target = "yo", model = "nmt")
+```
+
+Translating negative lexicon to Hausa
+
+```{r eval=FALSE,  echo=T}
+bin_negative_tranlated <- gl_translate(bin_neg_words, format = 'text', source = 'en', target = "yo", model = "nmt")
+```
+
+
+<!-- Saving the translated positive lexicon file -->
+<!-- ```{r eval=FALSE,  echo=T} -->
+<!-- write.csv(bin_positive_tranlated_yoruba, "~/Documents/R Directory/HausaLex/bin_positive_tranlated_hausa.csv") -->
+
+<!-- ``` -->
+
+<!-- Saving the translated negative lexicon: -->
+<!-- ```{r eval=FALSE,  echo=T} -->
+<!-- write.csv(bin_negative_tranlated_yoruba, "~/Documents/R Directory/HausaLex/bin_negative_tranlated_yoruba.csv") -->
+<!-- ``` -->
+
+### Processing the translated lexicon
+
+
+####  Bin Lui positive lexicon processing 
+
+```{r message=FALSE, warning=FALSE, echo= FALSE}
+bin_positive_tranlated <- as_tibble(read_csv(file = "~/Documents/R Directory/HausaLex/bin_positive_tranlated.csv")) 
+
+```
+
+Starting with positive lexicon translated, we have 2005 words as shown below:
+
+```{r}
+head(bin_positive_tranlated)
+n_distinct(bin_positive_tranlated) # distinct words translated
+```
+
+Let us re-arrange the above dataframe and rename X1
+```{r}
+
+bin_positive_tranlated <-  bin_positive_tranlated %>%  
+            relocate(text, .after = X1) %>% 
+            rename(Seria_num = "X1")
+
+bin_positive_tranlated
+```
+
+After some few observations, we found out some lexicons are not translated to Hausa from English. Also, some words appeared to have repeated translation with `m`. Lets explore the non-translated and those with repeated `m` as their translation:
+
+```{r}
+bin_positive_tranlated <- bin_positive_tranlated %>% 
+   mutate(non_translated =  if_else(translatedText == text, bin_positive_tranlated$text, " ")) %>% 
+   mutate(repeated_m = if_else(translatedText == "m", "m", " "))
+       
+bin_positive_tranlated
+```
+
+How many words are not translated 
+
+```{r}
+sum(bin_positive_tranlated$non_translated != " ")
+```
+
+What are the words that are not translate?
+
+```{r}
+
+non_translated_words <- bin_positive_tranlated %>% 
+                  select(non_translated)  %>% 
+                  filter( non_translated != " " )
+          
+non_translated_words
+```
+ How many words are translated as "m"
+
+```{r}
+sum(bin_positive_tranlated$repeated_m != " ")
+```
+
+What are the words translated as "m"
+
+```{r}
+translated_as_m <- bin_positive_tranlated %>% 
+                  select(repeated_m, translatedText, text) %>% 
+                  filter(repeated_m == "m")
+          
+translated_as_m
+```
+
+####  Bin Lui negative lexicon processing 
+
+Reading the translated Bin Lui negative lexicon
+
+
+
+```{r message=FALSE, warning=FALSE, echo= FALSE}
+bin_negative_tranlated <- as_tibble(read_csv(file = "~/Documents/R Directory/HausaLex/bin_negative_tranlated.csv")) 
+
+```
+
+```{r}
+head(bin_negative_tranlated)
+```
+
+We have a total of ``4781` negative words from the lexicon.Re-arranging :
+
+```{r}
+
+bin_negative_tranlated <-  bin_negative_tranlated %>%  
+            relocate(text, .after = X1) %>% 
+            rename(Seria_num = "X1")
+
+bin_negative_tranlated
+```
+
+finding non-translated and those translated as m
+```{r}
+bin_negative_tranlated <- bin_negative_tranlated %>% 
+        mutate(non_translated =  if_else(translatedText == text, bin_negative_tranlated$text, " ")) %>% 
+        mutate(repeated_m = if_else(translatedText == "m", "m", " "))
+bin_negative_tranlated
+```
+
+How many negative words are not translated 
+
+```{r}
+sum(bin_negative_tranlated$non_translated != " ")
+```
+
+What are the words that are not translate?
+
+```{r}
+
+neg_non_translated <- bin_negative_tranlated %>% 
+                  select(non_translated)  %>% 
+                  filter(non_translated != " " )
+          
+neg_non_translated
+```
+
+How many negative words are translated as "m"
+
+```{r}
+sum(bin_negative_tranlated$repeated_m != " ")
+```
+
+What are the words translated as "m"
+
+```{r}
+neg_translated_as_m <- bin_negative_tranlated %>% 
+                  select(repeated_m, translatedText, text) %>% 
+                  filter(repeated_m == "m")
+          
+neg_translated_as_m
+```

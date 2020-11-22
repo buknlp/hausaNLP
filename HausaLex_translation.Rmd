@@ -1,0 +1,324 @@
+---
+title: "HausaLexicon_Translation"
+author: "SHM"
+date: "14/08/2020"
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+## R Markdown
+
+```{r}
+library(googleLanguageR)
+gl_auth("hausalex_credential.json")
+
+```
+
+```{r}
+library(tidytext)
+library(tidyverse)
+library(textdata)
+```
+
+
+```{r}
+bin <- get_sentiments("bing") 
+
+bin_pos <- bin %>% filter(sentiment == "positive")
+
+bin_neg <- bin %>% filter(sentiment == "negative")
+
+```
+
+
+
+```{r}
+
+bin_pos_words <- bin_pos %>% 
+              pull("word")
+
+bin_neg_words <- bin_neg %>% 
+              pull("word") 
+
+```
+
+
+```{r}
+length(bin_pos_words)
+length(bin_neg_words)
+```
+
+
+# Yoruba
+```{r}
+bin_positive_tranlated_yoruba <- gl_translate(bin_pos_words, format = 'text', source = 'en', target = "yo", model = "nmt")
+```
+
+
+
+```{r}
+
+
+write.csv(bin_positive_tranlated_yoruba, "~/Documents/R Directory/HausaLex/bin_positive_tranlated_Yoruba.csv")
+
+```
+
+
+```{r}
+bin_negative_tranlated_yoruba <- gl_translate(bin_neg_words, format = 'text', source = 'en', target = "yo", model = "nmt")
+```
+
+```{r}
+write.csv(bin_negative_tranlated_yoruba, "~/Documents/R Directory/HausaLex/bin_negative_tranlated_yoruba.csv")
+```
+
+
+# Remove 0s
+```{r}
+affin <- lexicon_afinn()
+
+affin_neu  <- affin  %>% filter(value == 0)
+affin_pos <-  affin %>% filter(value >0) 
+affin_neg <- affin %>% filter(value < 0) 
+
+```
+
+
+
+```{r}
+affin_pos_words <-  affin_pos %>% pull("word")
+affin_neg_words <- affin_neg %>% pull("word")
+```
+
+
+```{r}
+length(affin_neg_words)
+```
+
+
+```{r}
+affin_negative_tranlated_yoruba <- gl_translate(affin_neg_words, format = 'text', source = 'en', target = "yo", model = "nmt")
+```
+
+```{r}
+length(affin_negative_tranlated_yoruba)
+head(affin_negative_tranlated_yoruba)
+```
+
+
+```{r}
+affin_positive_tranlated_yoruba <- gl_translate(affin_pos_words, format = 'text', source = 'en', target = "yo", model = "nmt")
+```
+
+
+
+```{r}
+write.csv(affin_positive_tranlated_yoruba, "~/Documents/R Directory/HausaLex/affin_positive_tranlated_yoruba.csv")
+write.csv(affin_negative_tranlated_yoruba, "~/Documents/R Directory/HausaLex/affin_negative_tranlated_yoruba.csv")
+
+```
+
+
+
+
+```{r}
+affin_pos_words <-  affin_pos %>% filter("word")
+affin_neg_words <- affin_neg %>% filter("word")
+```
+
+
+```{r}
+join_affin <- full_join(affin_translated, affin_original, by = "word")
+```
+
+
+```{r}
+affin_positive_tranlated_yoruba <- read_csv("affin_positive_tranlated_yoruba.csv")
+```
+
+
+
+
+```{r}
+#head(affin_negative_tranlated_yoruba)
+head(affin_positive_tranlated_yoruba) 
+#affin_positive_tranlated_yoruba <- affin_positive_tranlated_yoruba %>% select(-X1)
+```
+
+
+Translating both affin translated negative and positive
+```{r}
+
+
+affin_positive_tranlated_yoruba <- affin_positive_tranlated_yoruba %>% rename( word = text )
+#affin_negative_tranlated_yoruba <- affin_negative_tranlated_yoruba %>% rename( word = text )
+
+#ead(affin_positive_tranlated)
+
+#heaffin_positive_tranlated)
+#head(affin_negative_tranlated)
+
+#affin_pos
+#affin_neg
+```
+
+merge
+```{r}
+affin_positive_yoruba_merged <- full_join(affin_pos, affin_positive_tranlated_yoruba, by = "word" ) 
+affin_negative_yoruba_merged <- full_join(affin_neg, affin_negative_tranlated_yoruba, by = "word" )
+
+
+```
+
+```{r}
+head(affin_positive_yoruba_merged)
+```
+```{r}
+head(affin_negative_yoruba_merged)
+
+```
+Re-arrange
+```{r}
+
+affin_positive_yoruba_merged <- affin_positive_yoruba_merged %>% relocate(translatedText, .after = word )
+affin_negative__yoruba_merged <- affin_negative_yoruba_merged %>% relocate(translatedText, .after = word )
+
+```
+
+```{r}
+head(affin_positive_yoruba_merged)
+```
+
+```{r}
+write.csv(affin_positive_yoruba_merged, "~/Documents/R Directory/HausaLex/affin_positive_yoruba_merged.csv")
+write.csv(affin_negative__yoruba_merged, "~/Documents/R Directory/HausaLex/affin_negative__yoruba_mergedcsv")
+```
+
+
+
+```{r}
+library(reticulate)
+```
+
+```{r}
+conda_list()
+```
+
+```{r}
+use_condaenv("r-reticulate")
+```
+
+```{r}
+py_config()
+```
+```{r}
+conda_install("r-reticulate", "nltk")
+```
+
+
+```{r}
+nltk <- import("nltk")
+```
+
+
+```{python}
+from nltk.corpus import sentiwordnet as swn
+
+```
+
+
+```{r}
+library(lexicon)
+
+sentiword <- data("hash_sentiment_sentiword")
+p <- data(hash_sentiment_nrc)
+
+```
+
+```{r}
+
+library(lexicon)
+
+data(hash_sentiment_sentiword)
+
+
+```
+
+```{r}
+hash_sentiment_sentiword
+```
+
+```{r}
+
+sentiword_polarity <- hash_sentiment_sentiword %>% mutate(polarity = ifelse( y >0, "positive", "negative")) %>% view()
+
+```
+
+#renaming x and y
+```{r}
+sentiword_polarity <- sentiword_polarity %>% 
+  rename(words = x,
+        values= y )
+```
+
+```{r}
+head(sentiword_polarity)
+```
+
+
+pivot wider
+```{r}
+
+sentiword_words_only <- sentiword_polarity %>% pull(words)
+head(sentiword_words_only)
+```
+
+
+# translating senti_words
+```{r}
+sentiword_words_tranlated_yoruba <- gl_translate(sentiword_words_only, format = 'text', source = 'en', target = "yo", model = "nmt")
+```
+
+
+```{r}
+sentiword_words_tranlated_yoruba <- sentiword_words_tranlated_yoruba %>% 
+  rename(words = text)
+
+nrow(sentiword_words_tranlated_yoruba)
+```
+
+```{r}
+nrow(sentiword_polarity)
+```
+
+# joining the 
+```{r}
+sentiword_translation <- full_join(sentiword_words_tranlated_yoruba, sentiword_polarity , by = "words")
+```
+
+
+```{r}
+head(sentiword_translation)
+```
+
+```{r}
+sentiword_words_tranlated_yoruba <- sentiword_words_tranlated_yoruba %>% relocate(translatedText, .after = words )
+
+```
+
+```{r}
+head(sentiword_words_tranlated_yoruba)
+```
+
+
+```{r}
+write.csv(sentiword_words_tranlated_yoruba, "~/Documents/R Directory/HausaLex/sentiword_translation_yoruba.csv")
+
+```
+
