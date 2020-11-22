@@ -1,5 +1,5 @@
 # HausaNLP
 
-A [workflowr][] project.
+ [HausaNLP Research Group][] project.
 
-[workflowr]: https://github.com/jdblischak/workflowr
+[HausaNLP Research Group]: https://buknlp.github.io/hausaNLP/
